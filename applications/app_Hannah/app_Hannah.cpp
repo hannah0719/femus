@@ -17,21 +17,27 @@
 #include "VTKWriter.hpp"
 #include "GMVWriter.hpp"
 #include "LinearImplicitSystem.hpp"
+#include "NumericVector.hpp"
 
 using namespace femus;
 
-double InitalValueU(const std::vector < double >& x) {
-  return x[0] + x[1];
-}
+// double InitalValueU(const std::vector < double >& x) {
+//   return x[0] + x[1];
+// }
+// 
+// double InitalValueP(const std::vector < double >& x) {
+//   return x[0];
+// }
+// 
+// double InitalValueT(const std::vector < double >& x) {
+//   return x[1];
+// }
 
-double InitalValueP(const std::vector < double >& x) {
-  return x[0];
-}
+bool SetBoundaryCondition(const std::vector < double >& x, const char solName[], double& value, const int faceName, const double time) {
+  bool dirichlet = true; //dirichlet
+  value = 0;
 
-double InitalValueT(const std::vector < double >& x) {
-  return x[1];
-}
- if (faceName == 2)
+  if (faceName == 2)
     dirichlet = false;
 
   return dirichlet;
@@ -39,6 +45,10 @@ double InitalValueT(const std::vector < double >& x) {
 
 void AssemblePoissonProblem(MultiLevelProblem& ml_prob);
 
+double GetExactSolutionLaplace(const std::vector < double >& x) {
+  double pi = acos(-1.);
+  return -pi * pi * cos(pi * x[0]) * cos(pi * x[1]) - pi * pi * cos(pi * x[0]) * cos(pi * x[1]);
+};
 
 int main(int argc, char** args) {
 
@@ -66,7 +76,7 @@ int main(int argc, char** args) {
 
   mlSol.Initialize("All");    // initialize all varaibles to zero
 
-  mlSol.Initialize("U", InitalValueU);
+//   mlSol.Initialize("U", InitalValueU);
  
 
       // attach the boundary condition function and generate boundary data
@@ -83,7 +93,7 @@ int main(int argc, char** args) {
       system.AddSolutionToSystemPDE("u");
 
       // attach the assembling function to system
-      system.SetAssembleFunction(AssemblePoissonProblem_AD);
+      system.SetAssembleFunction(AssemblePoissonProblem);
 
       // initilaize and solve the system
       system.init();
