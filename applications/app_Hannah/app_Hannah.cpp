@@ -59,7 +59,7 @@ int main(int argc, char** args) {
   MultiLevelMesh mlMsh;
   double scalingFactor = 1.;
   // read coarse level mesh and generate finers level meshes
-  mlMsh.GenerateCoarseBoxMesh(8,8,0,-0.5,0.5,-0.5,0.5,0.,0.,QUAD9,"seventh");
+  mlMsh.GenerateCoarseBoxMesh(2,2,0,-0.5,0.5,-0.5,0.5,0.,0.,QUAD9,"seventh");
   //ReadCoarseMesh("./input/square.neu", "seventh", scalingFactor);
      //void GenerateCoarseBoxMesh(4,4,0,0.,1.,0.,1.,0.,0.,QUAD9,"seventh");
      //const unsigned int nx,
@@ -83,7 +83,7 @@ int main(int argc, char** args) {
   MultiLevelSolution mlSol(&mlMsh);
 
   // add variables to mlSol
-  mlSol.AddSolution("U", LAGRANGE, FIRST);
+  mlSol.AddSolution("U", LAGRANGE, SERENDIPITY);
   
 
   mlSol.Initialize("All");    // initialize all varaibles to zero
@@ -198,6 +198,7 @@ void AssemblePoissonProblem(MultiLevelProblem& ml_prob) {
 
   if (assembleMatrix)
     KK->zero(); // Set to zero all the entries of the Global Matrix
+    int counter = 0;
 
   // element loop: each process loops only on the elements that owns
   for (int iel = msh->IS_Mts2Gmt_elem_offset[iproc]; iel < msh->IS_Mts2Gmt_elem_offset[iproc + 1]; iel++) {
@@ -269,6 +270,9 @@ void AssemblePoissonProblem(MultiLevelProblem& ml_prob) {
             laplace   +=  phi_x[i * dim + jdim] * gradSolu_gss[jdim];
           }
 
+          counter++;
+          
+          
           double srcTerm = - GetExactSolutionLaplace(x_gss);
           Res[i] += (srcTerm * phi[i] - laplace) * weight;
 
@@ -288,6 +292,7 @@ void AssemblePoissonProblem(MultiLevelProblem& ml_prob) {
         } // end phi_i loop
       } // end gauss point loop
     } // endif single element not refined or fine grid loop
+   
 
     //--------------------------------------------------------------------------------------------------------
     // Add the local Matrix/Vector into the global Matrix/Vector
@@ -300,6 +305,7 @@ void AssemblePoissonProblem(MultiLevelProblem& ml_prob) {
       KK->add_matrix_blocked(Jac, l2GMap, l2GMap);
     }
   } //end element loop for each process
+   std::cout<< "------------------------" << counter << std::endl;
 
   RES->close();
 
